@@ -35,7 +35,7 @@ body {
 
 .font-display { font-family: "Orbitron", sans-serif; }
 
-/* frosted glass panel — pair with Tailwind rounded-*/padding utilities */
+/* frosted glass panel — pair with Tailwind rounding + padding utilities */
 .glass {
   background: var(--glass);
   border: 1px solid var(--glass-brd);
