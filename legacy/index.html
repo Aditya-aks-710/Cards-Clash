@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark" />
+  <title>Card Clash — 2v2 Bidding Scoreboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Poppins:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Animated background -->
+  <div class="bg-orbs" aria-hidden="true">
+    <span class="orb orb-1"></span>
+    <span class="orb orb-2"></span>
+    <span class="orb orb-3"></span>
+    <span class="orb orb-4"></span>
+  </div>
+
+  <main class="app">
+    <!-- ============ SETUP ============ -->
+    <section id="screen-setup" class="screen active">
+      <header class="brand">
+        <div class="brand__logo"><span class="s-b">&#9824;</span><span class="s-r">&#9829;</span><span class="s-b">&#9827;</span><span class="s-r">&#9830;</span></div>
+        <h1 class="brand__title">CARD CLASH</h1>
+        <p class="brand__sub">2&nbsp;v&nbsp;2 bidding showdown &mdash; commit your tricks, chase the lead.</p>
+      </header>
+
+      <div class="glass setup-grid">
+        <div class="setup-team team-a" data-tilt>
+          <div class="setup-team__label">Team 1</div>
+          <input id="team1-name" class="inp inp-team" maxlength="18" placeholder="Team A" autocomplete="off" />
+          <input id="player1-name" class="inp" maxlength="16" placeholder="Player 1" autocomplete="off" />
+          <input id="player2-name" class="inp" maxlength="16" placeholder="Player 2" autocomplete="off" />
+        </div>
+
+        <div class="setup-vs" aria-hidden="true">VS</div>
+
+        <div class="setup-team team-b" data-tilt>
+          <div class="setup-team__label">Team 2</div>
+          <input id="team2-name" class="inp inp-team" maxlength="18" placeholder="Team B" autocomplete="off" />
+          <input id="player3-name" class="inp" maxlength="16" placeholder="Player 3" autocomplete="off" />
+          <input id="player4-name" class="inp" maxlength="16" placeholder="Player 4" autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="glass rounds-box">
+        <div class="rounds-box__label">Number of rounds</div>
+        <div class="rounds-row">
+          <button id="rounds-minus" class="round-btn minus" aria-label="Fewer rounds">&minus;</button>
+          <div id="rounds-value" class="rounds-value">5</div>
+          <button id="rounds-plus" class="round-btn plus" aria-label="More rounds">+</button>
+        </div>
+        <div class="rounds-chips">
+          <button class="round-chip" data-rounds="3">3</button>
+          <button class="round-chip active" data-rounds="5">5</button>
+          <button class="round-chip" data-rounds="7">7</button>
+          <button class="round-chip" data-rounds="10">10</button>
+        </div>
+      </div>
+
+      <button id="start-btn" class="btn-primary">START GAME</button>
+    </section>
+
+    <!-- ============ BIDDING ============ -->
+    <section id="screen-bidding" class="screen">
+      <div class="screen-head">
+        <span class="pill" id="bidding-round">Round 1</span>
+        <h2 class="screen-title">Place Your Bids</h2>
+        <p class="screen-note">Each team commits to the tricks they&rsquo;ll win &mdash; pick 5 to 13.</p>
+      </div>
+      <div id="bidding-teams" class="bidding-teams"></div>
+      <div class="rules-hint glass">
+        <b>Bidding rules:</b> 5&ndash;5, 5&ndash;6 or 6&ndash;5 &rarr; the round restarts. 6&ndash;6 &rarr; you&rsquo;ll be asked whether to continue.
+      </div>
+      <button id="confirm-bids-btn" class="btn-primary">LOCK BIDS</button>
+    </section>
+
+    <!-- ============ SCORING ============ -->
+    <section id="screen-scoring" class="screen">
+      <div class="screen-head">
+        <span class="pill" id="scoring-round">Round 1</span>
+        <h2 class="screen-title">Tally the Tricks</h2>
+        <p class="screen-note" id="tricks-counter">Tricks in play: 0 / 13</p>
+      </div>
+      <div id="scoring-teams" class="scoring-teams"></div>
+      <button id="end-round-btn" class="btn-primary">END ROUND</button>
+    </section>
+
+    <!-- ============ SUMMARY ============ -->
+    <section id="screen-summary" class="screen">
+      <div class="screen-head">
+        <span class="pill" id="summary-round">Round complete</span>
+        <h2 class="screen-title">Round Results</h2>
+      </div>
+      <div id="summary-content" class="summary-content"></div>
+      <button id="next-round-btn" class="btn-primary">Start Next Round</button>
+    </section>
+
+    <!-- ============ FINAL ============ -->
+    <section id="screen-final" class="screen">
+      <div id="final-content" class="final-content"></div>
+      <button id="play-again-btn" class="btn-primary">NEW GAME</button>
+    </section>
+  </main>
+
+  <!-- Modal (6-6 confirm) -->
+  <div id="modal-backdrop" class="modal-backdrop">
+    <div class="modal glass" role="dialog" aria-modal="true">
+      <h3 id="modal-title" class="modal__title">Title</h3>
+      <p id="modal-body" class="modal__body">Body</p>
+      <div class="modal__actions">
+        <button id="modal-no" class="btn-ghost">No</button>
+        <button id="modal-yes" class="btn-primary small">Yes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast + confetti -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <script src="script.js"></script>
+</body>
+</html>

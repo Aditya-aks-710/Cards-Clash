@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+/* ============================================================
+   CARD CLASH — global theme (neon / glass / 3D)
+   Tailwind utilities handle layout + responsiveness;
+   these classes carry the signature visual effects.
+   ============================================================ */
+
+:root {
+  --glass: rgba(255, 255, 255, 0.055);
+  --glass-brd: rgba(255, 255, 255, 0.12);
+  --tc: #22e0ff;                          /* current team accent */
+  --tc-glow: rgba(34, 224, 255, 0.55);
+}
+
+.team-a { --tc: #22e0ff; --tc-glow: rgba(34, 224, 255, 0.55); }
+.team-b { --tc: #ff3d9a; --tc-glow: rgba(255, 61, 154, 0.55); }
+
+* { -webkit-tap-highlight-color: transparent; }
+
+html, body, #root { min-height: 100%; }
+
+body {
+  margin: 0;
+  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: #e9edff;
+  background:
+    radial-gradient(1200px 700px at 15% -10%, #16213f 0%, transparent 55%),
+    radial-gradient(1000px 700px at 110% 10%, #241536 0%, transparent 50%),
+    linear-gradient(160deg, #0a0e1c 0%, #05060d 100%);
+  background-attachment: fixed;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display { font-family: "Orbitron", sans-serif; }
+
+/* frosted glass panel — pair with Tailwind rounded-*/padding utilities */
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-brd);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* team-tinted surface */
+.team-surface {
+  border: 1px solid color-mix(in srgb, var(--tc) 42%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tc) 12%, transparent), rgba(255, 255, 255, 0.02));
+  box-shadow: inset 0 0 44px -26px var(--tc-glow);
+}
+
+/* neon accent text (uses nearest team colour) */
+.neon { color: var(--tc); text-shadow: 0 0 16px var(--tc-glow); }
+
+/* primary action button — pair with Tailwind sizing utilities */
+.btn-primary {
+  font-family: "Orbitron", sans-serif;
+  font-weight: 700;
+  color: #06121e;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(120deg, #22e0ff, #7c5cff 55%, #ff3d9a);
+  background-size: 180% 180%;
+  box-shadow: 0 14px 34px -12px rgba(124, 92, 255, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+  animation: sheen 6s linear infinite;
+}
+@keyframes sheen { 0% { background-position: 0% 50%; } 100% { background-position: 180% 50%; } }
+
+.btn-ghost {
+  cursor: pointer;
+  color: #e9edff;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-brd);
+}
+
+/* animated background orbs */
+.orb { position: absolute; border-radius: 50%; filter: blur(70px); opacity: 0.5; mix-blend-mode: screen; }
+@keyframes floaty {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(40px, -30px) scale(1.12); }
+  66%      { transform: translate(-30px, 25px) scale(0.94); }
+}
+
+/* thin, tasteful scrollbars */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.14); border-radius: 999px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary, .orb { animation: none; }
+}
