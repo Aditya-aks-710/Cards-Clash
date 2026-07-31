@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import TiltCard from '../components/TiltCard';
+import { sfx } from '../audio';
 
 const CHIPS = [3, 5, 7, 10];
 
@@ -14,7 +15,7 @@ export default function SetupScreen({ state, dispatch }) {
   ]);
 
   const setPlayer = (idx, v) => setPlayers((prev) => prev.map((p, i) => (i === idx ? v : p)));
-  const start = () => dispatch({ type: 'START', names: { team, players } });
+  const start = () => { sfx.lock(); dispatch({ type: 'START', names: { team, players } }); };
 
   return (
     <div className="flex flex-col gap-5 sm:gap-6">
@@ -63,7 +64,7 @@ export default function SetupScreen({ state, dispatch }) {
         <div className="text-[#8b93b8] text-sm tracking-wide mb-3.5">Number of rounds</div>
         <div className="flex items-center justify-center gap-6">
           <button
-            onClick={() => dispatch({ type: 'SET_ROUNDS', value: state.numRounds - 1 })}
+            onClick={() => { sfx.dec(); dispatch({ type: 'SET_ROUNDS', value: state.numRounds - 1 }); }}
             className="w-14 h-14 rounded-full bg-white/5 border border-white/10 text-2xl font-bold text-[#ff5d73] active:scale-90 transition"
             aria-label="Fewer rounds"
           >&minus;</button>
@@ -71,7 +72,7 @@ export default function SetupScreen({ state, dispatch }) {
             {state.numRounds}
           </div>
           <button
-            onClick={() => dispatch({ type: 'SET_ROUNDS', value: state.numRounds + 1 })}
+            onClick={() => { sfx.inc(); dispatch({ type: 'SET_ROUNDS', value: state.numRounds + 1 }); }}
             className="w-14 h-14 rounded-full bg-white/5 border border-white/10 text-2xl font-bold text-[#38f9a7] active:scale-90 transition"
             aria-label="More rounds"
           >+</button>
@@ -80,7 +81,7 @@ export default function SetupScreen({ state, dispatch }) {
           {CHIPS.map((n) => (
             <button
               key={n}
-              onClick={() => dispatch({ type: 'SET_ROUNDS', value: n })}
+              onClick={() => { sfx.click(); dispatch({ type: 'SET_ROUNDS', value: n }); }}
               className={`px-4 py-2 rounded-full font-semibold border transition ${
                 state.numRounds === n
                   ? 'text-white border-[#7c5cff] bg-[#7c5cff]/25 shadow-[0_0_18px_-4px_rgba(124,92,255,.7)]'

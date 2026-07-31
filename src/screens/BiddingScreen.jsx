@@ -3,6 +3,7 @@ import TiltCard from '../components/TiltCard';
 import Stepper from '../components/Stepper';
 import { Head, PrimaryBtn } from '../components/ui';
 import { MIN_BID, MAX_BID } from '../game';
+import { sfx } from '../audio';
 
 export default function BiddingScreen({ state, dispatch, onToast, onSixSix }) {
   const controls = useAnimationControls();
@@ -12,14 +13,17 @@ export default function BiddingScreen({ state, dispatch, onToast, onSixSix }) {
     const restart = (a === 5 && b === 5) || (a === 5 && b === 6) || (a === 6 && b === 5);
 
     if (restart) {
+      sfx.restart();
       onToast(`Bids too low (${a}\u2013${b}). Round restarts \u2014 re-bid!`, 'warn');
       controls.start({ x: [0, -9, 9, -6, 6, 0], transition: { duration: 0.45 } });
       return;
     }
     if (a === 6 && b === 6) {
+      sfx.click();
       onSixSix();
       return;
     }
+    sfx.lock();
     dispatch({ type: 'GO_SCORING' });
   };
 
@@ -40,8 +44,8 @@ export default function BiddingScreen({ state, dispatch, onToast, onSixSix }) {
             <div className="text-[#8b93b8] text-xs mt-1 mb-4">{tm.players.map((p) => p.name).join(' & ')}</div>
             <Stepper
               value={state.bids[i]}
-              onDec={() => dispatch({ type: 'SET_BID', team: i, delta: -1 })}
-              onInc={() => dispatch({ type: 'SET_BID', team: i, delta: 1 })}
+              onDec={() => { sfx.dec(); dispatch({ type: 'SET_BID', team: i, delta: -1 }); }}
+              onInc={() => { sfx.inc(); dispatch({ type: 'SET_BID', team: i, delta: 1 }); }}
             />
             <div className="text-[#8b93b8] text-xs tracking-wider mt-3.5">Choose {MIN_BID} &ndash; {MAX_BID}</div>
           </TiltCard>

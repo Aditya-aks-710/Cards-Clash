@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import TiltCard from '../components/TiltCard';
 import { Head, PrimaryBtn } from '../components/ui';
 import { computeTeamPoints, fmt, TOTAL_TRICKS } from '../game';
+import { sfx } from '../audio';
 
 export default function ScoringScreen({ state, dispatch }) {
   const actuals = state.teams.map((t) => t.players.reduce((s, p) => s + p.score, 0));
@@ -33,12 +34,12 @@ export default function ScoringScreen({ state, dispatch }) {
                     <ScoreNumber value={p.score} />
                     <div className="flex gap-2.5 justify-center mt-1">
                       <button
-                        onClick={() => dispatch({ type: 'SET_SCORE', team: i, player: j, delta: -1 })}
+                        onClick={() => { sfx.dec(); dispatch({ type: 'SET_SCORE', team: i, player: j, delta: -1 }); }}
                         className="w-12 h-12 rounded-full bg-white/5 border border-white/10 text-2xl font-bold text-[#ff5d73] active:scale-90 transition"
                         aria-label={`Minus ${p.name}`}
                       >&minus;</button>
                       <button
-                        onClick={() => dispatch({ type: 'SET_SCORE', team: i, player: j, delta: 1 })}
+                        onClick={() => { sfx.inc(); dispatch({ type: 'SET_SCORE', team: i, player: j, delta: 1 }); }}
                         className="w-12 h-12 rounded-full bg-white/5 border border-white/10 text-2xl font-bold text-[#38f9a7] active:scale-90 transition"
                         aria-label={`Plus ${p.name}`}
                       >+</button>
@@ -56,7 +57,7 @@ export default function ScoringScreen({ state, dispatch }) {
         })}
       </div>
 
-      <PrimaryBtn onClick={() => dispatch({ type: 'END_ROUND' })}>END ROUND</PrimaryBtn>
+      <PrimaryBtn onClick={() => { sfx.round(); dispatch({ type: 'END_ROUND' }); }}>END ROUND</PrimaryBtn>
     </div>
   );
 }

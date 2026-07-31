@@ -1,6 +1,7 @@
 import TiltCard from '../components/TiltCard';
 import { Head, PrimaryBtn } from '../components/ui';
 import { fmt } from '../game';
+import { sfx } from '../audio';
 
 export default function SummaryScreen({ state, dispatch }) {
   const h = state.history[state.history.length - 1];
@@ -52,7 +53,7 @@ export default function SummaryScreen({ state, dispatch }) {
         })}
       </div>
 
-      <PrimaryBtn onClick={() => dispatch({ type: 'NEXT_ROUND' })}>
+      <PrimaryBtn onClick={() => { sfx.click(); dispatch({ type: 'NEXT_ROUND' }); }}>
         {isLast ? 'See Final Result' : `Start Round ${state.round + 1}`}
       </PrimaryBtn>
     </div>

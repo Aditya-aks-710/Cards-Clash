@@ -1,7 +1,9 @@
-import { useCallback, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { reducer, initialState } from './game';
+import { reducer, initialState, loadState, saveState } from './game';
+import { sfx } from './audio';
 import Background from './components/Background';
+import ThreeBackground from './components/ThreeBackground';
 import Toast from './components/Toast';
 import Modal from './components/Modal';
 import SetupScreen from './screens/SetupScreen';
@@ -17,10 +19,13 @@ const variants = {
 };
 
 export default function App() {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(reducer, initialState, (init) => loadState() ?? init);
   const [toast, setToast] = useState(null);
   const [modal, setModal] = useState(false);
   const toastTimer = useRef(0);
+
+  // auto-save so a game survives a page refresh
+  useEffect(() => { saveState(state); }, [state]);
 
   const showToast = useCallback((msg, type = 'info') => {
     setToast({ id: Date.now(), msg, type });
@@ -39,6 +44,8 @@ export default function App() {
   return (
     <>
       <Background />
+      <ThreeBackground />
+      <MuteButton />
 
       <main className="relative z-0 mx-auto w-full max-w-4xl px-4 sm:px-6 py-6 sm:py-10 min-h-[100dvh] flex items-center">
         <div className="w-full">
@@ -65,9 +72,35 @@ export default function App() {
         body={"Both teams committed to 6. Do you want to continue this round with 6\u20136?"}
         confirmText="Yes, continue"
         cancelText="No, re-bid"
-        onConfirm={() => { setModal(false); dispatch({ type: 'GO_SCORING' }); }}
-        onCancel={() => { setModal(false); showToast('Okay \u2014 re-bid your numbers.', 'info'); }}
+        onConfirm={() => { sfx.lock(); setModal(false); dispatch({ type: 'GO_SCORING' }); }}
+        onCancel={() => { sfx.restart(); setModal(false); showToast('Okay \u2014 re-bid your numbers.', 'info'); }}
       />
     </>
+  );
+}
+
+function MuteButton() {
+  const [muted, setMuted] = useState(sfx.isMuted());
+  return (
+    <button
+      onClick={() => { const m = sfx.toggle(); setMuted(m); if (!m) sfx.click(); }}
+      className="fixed top-4 right-4 z-50 w-11 h-11 grid place-items-center rounded-full glass text-white/80 hover:text-white active:scale-90 transition"
+      aria-label={muted ? 'Unmute sound' : 'Mute sound'}
+      title={muted ? 'Unmute' : 'Mute'}
+    >
+      {muted ? (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M11 5 6 9H2v6h4l5 4V5Z" />
+          <line x1="22" y1="9" x2="16" y2="15" />
+          <line x1="16" y1="9" x2="22" y2="15" />
+        </svg>
+      ) : (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M11 5 6 9H2v6h4l5 4V5Z" />
+          <path d="M15.5 8.5a5 5 0 0 1 0 7" />
+          <path d="M18.5 5.5a9 9 0 0 1 0 13" />
+        </svg>
+      )}
+    </button>
   );
 }

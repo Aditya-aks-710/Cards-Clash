@@ -1,12 +1,20 @@
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { PrimaryBtn } from '../components/ui';
 import Confetti from '../components/Confetti';
 import { fmt } from '../game';
+import { sfx } from '../audio';
 
 export default function FinalScreen({ state, dispatch }) {
   const [c0, c1] = state.cumulative;
   const tie = c0 === c1;
   const wi = c0 > c1 ? 0 : 1;
+
+  useEffect(() => {
+    if (tie) sfx.round();
+    else sfx.win();
+    // play once when the final screen mounts
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="flex flex-col gap-5 sm:gap-6">
@@ -63,7 +71,7 @@ export default function FinalScreen({ state, dispatch }) {
         </table>
       </div>
 
-      <PrimaryBtn onClick={() => dispatch({ type: 'PLAY_AGAIN' })}>NEW GAME</PrimaryBtn>
+      <PrimaryBtn onClick={() => { sfx.click(); dispatch({ type: 'PLAY_AGAIN' }); }}>NEW GAME</PrimaryBtn>
     </div>
   );
 }

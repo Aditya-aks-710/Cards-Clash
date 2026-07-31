@@ -107,3 +107,27 @@ export function reducer(state, action) {
       return state;
   }
 }
+
+// ---------- persistence (auto save / resume across refreshes) ----------
+const STORAGE_KEY = 'cardclash:v1';
+
+export function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (!data || data.__v !== 1 || !Array.isArray(data.teams)) return null;
+    const { __v, ...saved } = data;
+    return saved;
+  } catch {
+    return null;
+  }
+}
+
+export function saveState(state) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ __v: 1, ...state }));
+  } catch {
+    /* storage unavailable — ignore */
+  }
+}
