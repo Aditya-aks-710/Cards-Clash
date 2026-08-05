@@ -12,6 +12,7 @@ import BiddingScreen from './screens/BiddingScreen';
 import ScoringScreen from './screens/ScoringScreen';
 import SummaryScreen from './screens/SummaryScreen';
 import FinalScreen from './screens/FinalScreen';
+import OnlineApp from './online/OnlineApp';
 
 const variants = {
   initial: { opacity: 0, y: 24, scale: 0.98 },
@@ -29,6 +30,7 @@ export default function App() {
   const [modal, setModal] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [restartConfirm, setRestartConfirm] = useState(false);
+  const [mode, setMode] = useState('offline'); // 'offline' | 'online'
   // show the welcome-back gate only when a game was left mid-play
   const [resuming, setResuming] = useState(
     () => !!savedRef.current && savedRef.current.screen !== 'setup'
@@ -55,8 +57,20 @@ export default function App() {
     toastTimer.current = window.setTimeout(() => setToast(null), 2800);
   }, []);
 
+  // Online mode takes over the screen; the offline reducer + screens stay intact underneath.
+  if (mode === 'online') {
+    return (
+      <>
+        <Background />
+        <ThreeBackground />
+        <MuteButton />
+        <OnlineApp onExit={() => setMode('offline')} />
+      </>
+    );
+  }
+
   const screens = {
-    setup: <SetupScreen state={state} dispatch={dispatch} />,
+    setup: <SetupScreen state={state} dispatch={dispatch} onPlayOnline={() => { sfx.lock(); setMode('online'); }} />,
     bidding: <BiddingScreen state={state} dispatch={dispatch} onToast={showToast} onSixSix={() => setModal(true)} />,
     scoring: <ScoringScreen state={state} dispatch={dispatch} />,
     summary: <SummaryScreen state={state} dispatch={dispatch} />,

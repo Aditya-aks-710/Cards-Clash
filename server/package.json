@@ -1,0 +1,16 @@
+{
+  "name": "card-clash-server",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Authoritative realtime server for Card Clash online mode.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node --watch index.js",
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "nanoid": "^5.0.7",
+    "socket.io": "^4.7.5"
+  }
+}

@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import TiltCard from '../components/TiltCard';
-import Overlay from '../components/Overlay';
 import { sfx } from '../audio';
 
 const CHIPS = [3, 5, 7, 10];
 
-export default function SetupScreen({ state, dispatch }) {
+export default function SetupScreen({ state, dispatch, onPlayOnline }) {
   const [team, setTeam] = useState([state.teams[0].name, state.teams[1].name]);
   const [players, setPlayers] = useState([
     state.teams[0].players[0].name,
@@ -14,7 +13,6 @@ export default function SetupScreen({ state, dispatch }) {
     state.teams[1].players[0].name,
     state.teams[1].players[1].name,
   ]);
-  const [online, setOnline] = useState(false);
 
   const setPlayer = (idx, v) => setPlayers((prev) => prev.map((p, i) => (i === idx ? v : p)));
   const start = () => { sfx.lock(); dispatch({ type: 'START', names: { team, players } }); };
@@ -51,7 +49,7 @@ export default function SetupScreen({ state, dispatch }) {
         <motion.button
           whileTap={{ scale: 0.97 }}
           whileHover={{ y: -2 }}
-          onClick={() => { sfx.click(); setOnline(true); }}
+          onClick={() => { sfx.click(); onPlayOnline?.(); }}
           className="relative w-full sm:w-auto sm:min-w-[300px] rounded-2xl px-8 py-3.5 font-display tracking-[2px] text-white overflow-hidden"
           style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.16)' }}
         >
@@ -69,7 +67,7 @@ export default function SetupScreen({ state, dispatch }) {
           className="absolute -top-2 -right-1 sm:-right-2 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide text-[#06121e]"
           style={{ background: 'linear-gradient(90deg,#ffd166,#ff9db0)', boxShadow: '0 0 16px -3px rgba(255,209,102,.7)' }}
         >
-          COMING SOON
+          BETA
         </span>
       </div>
 
@@ -137,32 +135,6 @@ export default function SetupScreen({ state, dispatch }) {
       >
         START GAME
       </motion.button>
-
-      <Overlay open={online} onBackdrop={() => setOnline(false)}>
-        <div
-          className="mx-auto mb-3 grid place-items-center w-16 h-16 rounded-full text-[#22e0ff]"
-          style={{ background: 'radial-gradient(circle at 50% 40%, rgba(34,224,255,.28), transparent 70%)' }}
-        >
-          <GlobeIcon big />
-        </div>
-        <span
-          className="inline-block px-3 py-1 rounded-full font-display text-[10px] tracking-[2px] uppercase text-[#06121e]"
-          style={{ background: 'linear-gradient(90deg,#ffd166,#ff9db0)' }}
-        >
-          Next release
-        </span>
-        <h3 className="font-display text-2xl text-white mt-3">Online multiplayer is coming</h3>
-        <p className="text-[#8b93b8] mt-2 text-sm leading-relaxed">
-          Soon you&rsquo;ll spin up a room, share a code, and battle friends in real time from anywhere.
-          We&rsquo;re building it now &mdash; it goes live in the next release. For today, gather round and enjoy pass &amp; play.
-        </p>
-        <button
-          onClick={() => { sfx.click(); setOnline(false); }}
-          className="btn-primary rounded-2xl px-6 py-3.5 w-full mt-6 tracking-[1px]"
-        >
-          Can&rsquo;t wait!
-        </button>
-      </Overlay>
     </div>
   );
 }

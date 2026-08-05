@@ -6,13 +6,15 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "server": "node --watch server/index.js"
   },
   "dependencies": {
     "@react-three/fiber": "^8.17.10",
     "framer-motion": "^11.11.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "socket.io-client": "^4.8.3",
     "three": "^0.169.0"
   },
   "devDependencies": {
