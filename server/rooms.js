@@ -45,5 +45,7 @@ export function publicRoom(room) {
       isHost: p.id === room.hostId,
       connected: p.connected,
     })),
+    picked: room.picks ? Object.keys(room.picks).length : 0,
+    teams: room.teamsPublic || null,
   };
 }

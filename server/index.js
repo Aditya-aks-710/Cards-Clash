@@ -1,6 +1,7 @@
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { createRoom, getRoom, deleteRoom, publicRoom, MAX_PLAYERS } from './rooms.js';
+import { resolveTeams } from './rules.js';
 
 const PORT = process.env.PORT || 3001;
 // In production, set CLIENT_ORIGIN to the deployed frontend URL. '*' is fine for local dev.
@@ -18,10 +19,39 @@ const httpServer = createServer((req, res) => {
 
 const io = new Server(httpServer, {
   cors: { origin: ORIGIN, methods: ['GET', 'POST'] },
+  // tolerate briefly-throttled/backgrounded clients (mobile, background tabs) before dropping them
+  pingTimeout: 60000,
+  pingInterval: 25000,
 });
 
 const sanitizeName = (n) => String(n || '').trim().slice(0, 16) || 'Player';
 const ack = (cb, payload) => { if (typeof cb === 'function') cb(payload); };
+
+function startPartnerSelect(room) {
+  room.phase = 'partner_select';
+  room.picks = {};
+  room.teamsPublic = null;
+  io.to(room.code).emit('room_update', publicRoom(room));
+  console.log(`[partner] ${room.code} selecting`);
+}
+
+function finalizeTeams(room) {
+  const players = room.players.map((p) => ({ id: p.id, name: p.name }));
+  const nameOf = (id) => players.find((p) => p.id === id)?.name ?? '?';
+  const { teamA, teamB, seats, random, messages } = resolveTeams(players, room.picks);
+  room.teamsPublic = {
+    teams: [
+      { players: teamA.map((id) => ({ id, name: nameOf(id) })) },
+      { players: teamB.map((id) => ({ id, name: nameOf(id) })) },
+    ],
+    seats: seats.map((id, i) => ({ id, name: nameOf(id), team: i % 2 })),
+    random,
+    messages,
+  };
+  room.phase = 'teams';
+  io.to(room.code).emit('room_update', publicRoom(room));
+  console.log(`[teams] ${room.code} random=${random}`);
+}
 
 io.on('connection', (socket) => {
   // which room this socket currently belongs to (null when in none)
@@ -54,6 +84,24 @@ io.on('connection', (socket) => {
     ack(cb, { ok: true, code: room.code, playerId: socket.id, room: publicRoom(room) });
     io.to(room.code).emit('room_update', publicRoom(room));
     console.log(`[join] ${sanitizeName(name)} -> ${room.code} (${room.players.length}/${MAX_PLAYERS})`);
+    if (room.players.length === MAX_PLAYERS) startPartnerSelect(room);
+  });
+
+  socket.on('pick_partner', ({ targetId } = {}, cb) => {
+    const room = getRoom(joinedCode);
+    if (!room || room.phase !== 'partner_select') return ack(cb, { ok: false, error: 'Not selecting partners' });
+    const me = room.players.find((p) => p.id === socket.id);
+    const target = room.players.find((p) => p.id === targetId);
+    if (!me || !target || target.id === socket.id) return ack(cb, { ok: false, error: 'Invalid pick' });
+    room.picks[socket.id] = targetId;
+    ack(cb, { ok: true });
+    io.to(room.code).emit('room_update', publicRoom(room));
+    if (Object.keys(room.picks).length === MAX_PLAYERS) finalizeTeams(room);
+  });
+
+  socket.on('sync', (cb) => {
+    const room = getRoom(joinedCode);
+    ack(cb, { ok: !!room, room: room ? publicRoom(room) : null });
   });
 
   socket.on('leave_room', () => leaveCurrent());
@@ -75,6 +123,13 @@ io.on('connection', (socket) => {
       return;
     }
     if (room.hostId === socket.id) room.hostId = room.players[0].id; // hand off host
+    // a game in progress can't continue short-handed: fall back to the lobby
+    if (room.phase !== 'lobby' && room.players.length < MAX_PLAYERS) {
+      room.phase = 'lobby';
+      room.picks = {};
+      room.teams = null;
+      room.seats = null;
+    }
     io.to(code).emit('room_update', publicRoom(room));
   }
 });
